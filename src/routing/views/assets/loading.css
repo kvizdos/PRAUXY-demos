@@ -1,0 +1,66 @@
+html, body { height: 100%; padding: 0; margin: 0; font-family: 'Open Sans', sans-serif; }
+
+article.center {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+article.center section {
+    text-align: center;
+    width: 95%;
+}
+
+article.center section span {
+    font-size: 4em;
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: 2000ms;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: cubic-bezier(0.8, 0.07, 0.22, 1.02);
+ 
+    color: rgb(51, 141, 214);
+}
+
+article.center section p {
+    font-size: 2em;
+}
+
+article.center section img {
+    width: 50%;
+    filter: grayscale(1);
+    transition: .2s;
+}
+
+article.center section img:hover {
+    filter: grayscale(0);
+    transition: .2s;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0);
+        animation-play-state:running
+    }
+
+    50% {
+        transform: rotate(180deg);
+        animation-play-state:paused
+    }
+
+    100% {
+        transform: rotate(360deg);
+        animation-play-state:running
+
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    article.center section {
+        width: 25%;
+    }
+
+    article.center section img {
+        width: 35%;
+    }
+}
