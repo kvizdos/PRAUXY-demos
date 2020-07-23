@@ -1,6 +1,6 @@
+import { exec } from "child_process";
 import fs from "fs";
 import { ServiceHandler } from "../ServicesHandler";
-import { exec } from "child_process";
 
 type ServiceTypes = "nodejs" | "static" | "unknown";
 type DockerStatus = "online" | "offline";
@@ -65,7 +65,10 @@ export class Docker extends ServiceHandler {
         });
     }
 
-    public async start(sessionID: string, port: number) {
+    public async start(sessionID: string,
+                       port: number,
+                       listeningOn: number,
+                       processEnvPortName?: string) {
         return new Promise(async (resolve, reject) => {
             const Service = fs.readdirSync(`repos/gh/${sessionID}`);
             const Type = this.parseType(Service);
@@ -73,7 +76,8 @@ export class Docker extends ServiceHandler {
             if (Type == "unknown") { return reject("unknown type"); }
 
             try {
-                const started = await this.startDocker(sessionID, Type, port);
+                console.log(Service);
+                const started = await this.startDocker(sessionID, Type, port, listeningOn, processEnvPortName);
                 resolve(started);
             } catch (e) {
                 reject(e);
@@ -89,7 +93,61 @@ export class Docker extends ServiceHandler {
                     resolve(true);
                 }
             });
-        })
+        });
+    }
+
+    public async parsePort(sessionID: string, fileOverride?: string) {
+        return new Promise<any>(async (resolve, reject) => {
+            // tslint:disable-next-line: max-line-length
+            const file = fs.readFileSync(`${__dirname}/../../repos/gh/${sessionID}/${fileOverride == undefined ? "index.js" : fileOverride}`).toString("utf-8");
+
+            const PORT = -1;
+
+            //  /\.listen\((?:(?:process\.env\.(\w+))|(\w+))/gm
+            // 1 = process.env.<WHATEVER>
+            // 2 = Variable / Port #
+
+            // If 2:
+            // new RegExp("(?:var|let|const)\\s"+FOUND+"\\s?=\\s?(\\w+)", "m")
+
+            // detect requires:
+            // \.listen\((?:(?:process\.env\.(\w+))|(\w+\.(?:[^,\n\s)]+))|(\w+))
+
+            const broadCheck = /\.listen\((?:(?:process\.env\.(\w+))|(\w+))/m;
+            const broadCheckMatch = broadCheck.exec(file);
+            if (broadCheckMatch == null) {
+                return resolve(-1); // Returns -1 to signfiy that no port was found.
+            }
+
+            if (broadCheckMatch[2] !== undefined) {
+                // Has either a variable / PORT assigned
+                if (broadCheckMatch[2].match(/[0-9]/) !== null) {
+                    console.log(fileOverride + " " + broadCheckMatch[2] + " - 1");
+
+                    return resolve(parseInt(broadCheckMatch[2], 10));
+                } else {
+                    const FOUND = broadCheckMatch[2];
+                    // tslint:disable-next-line: max-line-length
+                    const varEquals = new RegExp("(?:var|let|const)\\s" + FOUND + "\\s?=\\s?(process\\.env\\.\\w+|\\w+)", "m");
+                    const matched = varEquals.exec(file);
+
+                    if (matched == null) {
+                        return resolve(-1);
+                    } else {
+                        const isNum = matched[1][0].match(/[0-9]/);
+                        console.log(FOUND + " " + fileOverride + " " + matched[1] + " - 2");
+
+                        return resolve(isNum ? parseInt(matched[1], 10) : matched[1]);
+
+                    }
+                }
+            } else if (broadCheckMatch[1] !== undefined) {
+                console.log(fileOverride + " " + broadCheckMatch[1] + " - 3");
+                resolve(`process.env.${broadCheckMatch[1]}`);
+            }
+
+            resolve(-1);
+        });
     }
 
     private parseType(files: string[]) {
@@ -100,10 +158,15 @@ export class Docker extends ServiceHandler {
         return type;
     }
 
-    private async startDocker(id: string, type: ServiceTypes, serverPort: number) {
+    private async startDocker(id: string,
+                              type: ServiceTypes,
+                              serverPort: number,
+                              listeningOn: number,
+                              processEnvPortName?: string) {
         return new Promise(async (resolve, reject) => {
             // tslint:disable-next-line: max-line-length
-            await this.run(`docker run -p ${serverPort}:3000 -t -d -v "${__dirname}/../../repos/gh/${id}":/app --name ${id} ${type === "nodejs" ? "node-slim" : "unknown"}`);
+            console.log("Running: " + `docker run -p ${serverPort}:${listeningOn} -t -d -v "${__dirname}/../../repos/gh/${id}":/app ${processEnvPortName === undefined ? "" : `-e ${processEnvPortName}=${listeningOn}`} --name ${id} ${type === "nodejs" ? "node-slim" : "unknown"}`)
+            await this.run(`docker run -p ${serverPort}:${listeningOn} -t -d -v "${__dirname}/../../repos/gh/${id}":/app ${processEnvPortName === undefined ? "" : `-e ${processEnvPortName}=${listeningOn}`} --name ${id} ${type === "nodejs" ? "node-slim" : "unknown"}`);
 
             resolve(true);
         });

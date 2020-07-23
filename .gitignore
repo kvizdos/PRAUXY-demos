@@ -1,6 +1,8 @@
 node_modules
 build
 tmp/*
-repos/*
-!repos/gh/test/
+repos/gh/*
+!repos/gh/test*/
+!repos/gh/test*/*
 !tmp/.gitkeep
+repos/gh/test*/node_modules

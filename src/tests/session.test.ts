@@ -3,7 +3,7 @@ import { Session } from "../modules/Session";
 test("should initialize a session", async (done) => {
     const sess = new Session("https://github.com/test/test.git");
 
-    await sess.init();
+    await sess.init("test");
 
     const isRunning = await sess.docker.getDocker(sess.id);
 
