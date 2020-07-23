@@ -6,3 +6,4 @@ repos/gh/*
 !repos/gh/test*/*
 !tmp/.gitkeep
 repos/gh/test*/node_modules
+coverage/

@@ -14,4 +14,4 @@ test("should initialize a session", async (done) => {
     expect(isRunning.status).toBe("online");
 
     done();
-});
+}, 60000);

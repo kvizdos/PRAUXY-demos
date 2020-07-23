@@ -25,8 +25,6 @@ export class Git extends ServiceHandler {
     public async pull(url: string, sessionID: string) {
         const repoName = url.split("/").splice(-1)[0].split(".")[0];
 
-        console.log("PULLING " + url)
-
         return new Promise<GitReturnStatus>(async (resolve, reject) => {
             try {
                 await this.getRepo(url, repoName);
@@ -54,7 +52,7 @@ export class Git extends ServiceHandler {
 
     private getRepo(repoURL: string, repoName: string) {
         return new Promise(async (resolve, reject) => {
-            if (process.env.NODE_ENV == "test") {
+            if (process.env.NODE_ENV === "test") {
                 fs.mkdirSync(`tmp/${repoName}`);
                 // tslint:disable-next-line: max-line-length
                 fs.writeFileSync(`tmp/${repoName}/index.js`, `var express = require('express')\nvar app = express()\n\napp.get('/', function (req, res) {\n  res.send('Hello World!')\n})\n\napp.listen(3000, function () {\n  console.log('Listening on port 3000...')\n})`);
@@ -63,8 +61,8 @@ export class Git extends ServiceHandler {
                 resolve(true);
             } else {
                 try {
-                const status = await this.run(`git clone ${repoURL} tmp/${repoName}`);
-                resolve(status);
+                    const status = await this.run(`git clone ${repoURL} tmp/${repoName}`);
+                    resolve(status);
                 } catch (e) {
                     reject(e);
                 }
