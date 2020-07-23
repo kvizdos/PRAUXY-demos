@@ -77,11 +77,16 @@ it("should properly detect ports in Node files", async (done) => {
 test("should start a NodeJS Docker with process variable", async (done) => {
     const DOC = new Docker();
 
-    const startedDocker = await DOC.start("test-process-variable", 80, 8081, "PORT");
+    const startedDocker = await DOC.start("test-process-variable", 8082, 8081, "PORT");
 
     expect(startedDocker).toBe(true);
 
-    const hasStarted = await DOC.waitUntilUp(80);
+    const dockers = await DOC.getDocker("test-process-variable");
+
+    expect(dockers.id).toBe("test-process-variable");
+    expect(dockers.status).toBe("online");
+
+    const hasStarted = await DOC.waitUntilUp(8082);
 
     expect(hasStarted).toBe(true);
 

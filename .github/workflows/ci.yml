@@ -21,5 +21,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - run: docker build Docker/ --file Docker/Dockerfile --tag node-slim
-    - run: sudo npm install
-    - run: sudo npm test
+    - run: npm install
+    - run: npm install wait-port -g
+    - run: npm test
