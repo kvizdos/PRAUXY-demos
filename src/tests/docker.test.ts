@@ -93,4 +93,4 @@ test("should start a NodeJS Docker with process variable", async (done) => {
     await DOC.removeDocker("test-process-variable", true);
 
     done();
-}, 10000);
+}, 60000);
