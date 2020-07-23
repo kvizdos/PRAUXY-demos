@@ -76,7 +76,6 @@ export class Docker extends ServiceHandler {
             if (Type == "unknown") { return reject("unknown type"); }
 
             try {
-                console.log(Service);
                 const started = await this.startDocker(sessionID, Type, port, listeningOn, processEnvPortName);
                 resolve(started);
             } catch (e) {
