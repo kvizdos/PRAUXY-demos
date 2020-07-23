@@ -25,6 +25,8 @@ export class Git extends ServiceHandler {
     public async pull(url: string, sessionID: string) {
         const repoName = url.split("/").splice(-1)[0].split(".")[0];
 
+        console.log("PULLING " + url)
+
         return new Promise<GitReturnStatus>(async (resolve, reject) => {
             try {
                 await this.getRepo(url, repoName);

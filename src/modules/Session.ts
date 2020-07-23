@@ -18,17 +18,20 @@ export class Session {
 
     public async init(testingID?: string) {
         return new Promise<string>(async (resolve, reject) => {
+            await this.git.pull(this.repo, this.id);
+
             let listeningOn: any = await this.docker.parsePort(testingID || this.id);
 
-            const requiresProcessEnv = typeof listeningOn == "string" ? listeningOn.includes("process.env") : undefined;
+            const requiresProcessEnv = typeof listeningOn === "string" ?
+                                       listeningOn.includes("process.env") :
+                                       undefined;
 
             const processEnvVar = requiresProcessEnv ? listeningOn.split(".")[2] : undefined;
 
             listeningOn = requiresProcessEnv ? Math.floor(Math.random() * 8000) + 10000 : listeningOn;
 
-            await this.git.pull(this.repo, this.id);
             await this.docker.start(this.id, this.port, listeningOn, processEnvVar);
-            if (process.env.NODE_ENV != "test") {
+            if (process.env.NODE_ENV !== "test") {
                 await this.docker.waitUntilUp(this.port);
             }
             resolve(this.id);
